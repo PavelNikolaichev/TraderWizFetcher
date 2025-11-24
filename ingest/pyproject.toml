@@ -1,0 +1,11 @@
+[project]
+name = "ingest"
+version = "0.1.0"
+description = "Ingest module for TraderWizFetcher - handles data ingestion tasks."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "aiohttp>=3.13.2",
+    "redis>=7.1.0",
+    "asyncpg>=0.29.0",
+]

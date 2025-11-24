@@ -1,7 +1,7 @@
 [project]
-name = "traderwizfetcher"
+name = "consume"
 version = "0.1.0"
-description = "Add your description here"
+description = "A data consumption module for TraderWizFetcher. Sends processed data to subscribed HTTP clients."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
@@ -11,10 +11,4 @@ dependencies = [
     "pydantic>=2.12.4",
     "redis>=7.1.0",
     "uvicorn>=0.38.0",
-]
-
-[tool.uv.workspace]
-members = [
-    "ingest",
-    "consume",
 ]

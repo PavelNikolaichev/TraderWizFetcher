@@ -1,0 +1,28 @@
+FROM python:3.13-slim
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+# Set environment variables
+ENV UV_COMPILE_BYTECODE=1
+ENV UV_LINK_MODE=copy
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+# Copy dependency files
+COPY pyproject.toml uv.lock* .python-version ./
+
+# Install dependencies - no freeze because deps are handled on the upper level (it's bad)
+RUN uv sync
+
+# Copy the application code into a package structure
+COPY . /app/
+
+# Add virtual environment to PATH
+ENV PATH="/app/.venv/bin:$PATH"
+# Set PYTHONPATH to include the parent of the ingest package
+ENV PYTHONPATH=/app
+
+# Run the application
+CMD ["uv", "run", "gunicorn", "main:app", "--bind", "0.0.0.0:8000", "--worker-class", "uvicorn.workers.UvicornWorker"]

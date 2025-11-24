@@ -1,0 +1,37 @@
+services:
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-market_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # TODO: clean up unused environment variables, also we can pass the dotenv file directly
+  ingest:
+    build: ./ingest
+    depends_on:
+      - redis
+      - postgres
+    env_file:
+      - ./.env
+  consume:
+    build: ./consume
+    depends_on:
+      - redis
+      - postgres
+    env_file:
+      - ./.env
+    ports:
+      - "${CONSUMER_PORT:-8000}:8000"
+
+volumes:
+  postgres_data:
