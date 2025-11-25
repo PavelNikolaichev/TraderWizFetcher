@@ -23,8 +23,8 @@ class RedisPublisher:
 
     async def publish_with_retry(self, channel: str, message: str):
         """
-        Publish a message to a Redis channel with exponential backoff retry logic.
-        :param channel: The Redis channel to publish to.
+        Publish a message to a Redis Stream with exponential backoff retry logic.
+        :param channel: The Redis stream key to publish to.
         :param message: The message to publish.
         :raises Exception: If publishing fails after maximum retries.
         """
@@ -32,7 +32,9 @@ class RedisPublisher:
 
         while True:
             try:
-                await self.client.publish(channel, message)  # type: ignore
+                # Use xadd for Redis Streams. We limit the stream to 1000 items to prevent it from growing indefinitely.
+                message_id = await self.client.xadd(channel, {"data": message}, maxlen=1000)  # type: ignore
+                logger.info(f"Published to stream {channel}. ID: {message_id}")
                 health.redis_ready = True
                 return
 

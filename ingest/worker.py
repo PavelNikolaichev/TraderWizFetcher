@@ -3,7 +3,7 @@ import json
 from logging import getLogger
 import aiohttp
 
-from config import DATA_SOURCE_API_KEY, DATA_SOURCE_URL, REDIS_CHANNEL, FETCH_INTERVAL
+from config import DATA_SOURCE_API_KEY, DATA_SOURCE_URL, REDIS_STREAM, FETCH_INTERVAL
 from redis_client import RedisPublisher
 from http_client import fetch_json
 from db import Database
@@ -14,18 +14,21 @@ logger = getLogger(__name__)
 async def run_worker():
     """
     Start the ingestion worker that fetches data from a specified URL
-    and publishes it to a Redis channel at regular intervals.
+    and publishes it to a Redis Stream at regular intervals.
     """
     redis = RedisPublisher()
     db = Database()
 
     logger.info(f"Starting ingestion worker service... Fetching from {DATA_SOURCE_URL}")
 
-    try:
-        await db.connect()
-    except Exception as e:
-        logger.error(f"Could not connect to DB, exiting: {e}")
-        return
+    # Connect to DB with retry
+    while True:
+        try:
+            await db.connect()
+            break
+        except Exception as e:
+            logger.error(f"Could not connect to DB: {e}. Retrying in 5s...")
+            await asyncio.sleep(5)
 
     try:
         async with aiohttp.ClientSession() as session:
@@ -38,12 +41,12 @@ async def run_worker():
                         await db.save_market_data(data)
 
                         message = json.dumps(data)
-                        await redis.publish_with_retry(REDIS_CHANNEL, message)
+                        await redis.publish_with_retry(REDIS_STREAM, message)
 
                         logger.info(
-                            "Message published",
+                            "Message published to stream",
                             extra={
-                                "channel": REDIS_CHANNEL,
+                                "stream": REDIS_STREAM,
                                 "message_len": len(message),
                             },
                         )

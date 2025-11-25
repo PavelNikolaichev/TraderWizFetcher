@@ -3,7 +3,7 @@ import os
 DATA_SOURCE_URL = os.getenv("DATA_SOURCE_URL", "")
 DATA_SOURCE_API_KEY = os.getenv("DATA_SOURCE_API_KEY", "")
 REDIS_URL = os.getenv("REDIS_URL", "")
-REDIS_CHANNEL = os.getenv("REDIS_CHANNEL", "data_channel")
+REDIS_STREAM = os.getenv("REDIS_STREAM", "market_data")
 
 POSTGRES_USER = os.getenv("POSTGRES_USER", "user")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "password")

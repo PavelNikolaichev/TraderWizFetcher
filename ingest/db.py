@@ -21,7 +21,8 @@ class Database:
     async def connect(self):
         if not self.pool:
             try:
-                self.pool = await asyncpg.create_pool(self.dsn)
+                # Set a timeout for connection
+                self.pool = await asyncpg.create_pool(self.dsn, command_timeout=10)
                 logger.info("Connected to PostgreSQL")
                 await self.init_db()
             except Exception as e:
