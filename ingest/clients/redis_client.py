@@ -8,7 +8,7 @@ from config import (
     REDIS_BACKOFF_BASE,
     REDIS_MAX_RETRIES,
 )
-from health import health
+from utils.health import health
 
 logger = getLogger(__name__)
 

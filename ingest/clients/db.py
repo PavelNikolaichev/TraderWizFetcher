@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Optional
 import asyncpg
 import json
 from logging import getLogger
@@ -17,6 +17,13 @@ class Database:
     def __init__(self):
         self.dsn = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
         self.pool: Optional[asyncpg.Pool] = None
+
+    async def is_connected(self) -> bool:
+        """
+        Check if the database connection pool is established.
+        :return: True if connected, False otherwise.
+        """
+        return self.pool is not None
 
     async def connect(self):
         if not self.pool:
@@ -47,7 +54,7 @@ class Database:
             await connection.execute(create_table_query)
             logger.info("Database schema initialized")
 
-    async def save_market_data(self, data: dict):
+    async def save_market_data(self, data: dict[str, Any]):
         """Save raw market data to the database."""
         if not self.pool:
             await self.connect()

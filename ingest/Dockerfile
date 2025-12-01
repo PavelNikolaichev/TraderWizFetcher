@@ -19,10 +19,5 @@ RUN uv sync
 # Copy the application code into a package structure
 COPY . /app/
 
-# Add virtual environment to PATH
-ENV PATH="/app/.venv/bin:$PATH"
-# Set PYTHONPATH to include the parent of the ingest package
-ENV PYTHONPATH=/app/
-
 # Run the application
 CMD ["uv", "run", "main.py"]

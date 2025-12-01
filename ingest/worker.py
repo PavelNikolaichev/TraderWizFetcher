@@ -4,9 +4,7 @@ from logging import getLogger
 import aiohttp
 
 from config import DATA_SOURCE_API_KEY, DATA_SOURCE_URL, REDIS_STREAM, FETCH_INTERVAL
-from redis_client import RedisPublisher
-from http_client import fetch_json
-from db import Database
+from clients import Database, RedisPublisher, fetch_json
 
 logger = getLogger(__name__)
 
@@ -22,23 +20,36 @@ async def run_worker():
     logger.info(f"Starting ingestion worker service... Fetching from {DATA_SOURCE_URL}")
 
     # Connect to DB with retry
+    # TODO: can be separated into its own function with retry decorator
+    retry_attempts = 5
     while True:
         try:
             await db.connect()
             break
         except Exception as e:
             logger.error(f"Could not connect to DB: {e}. Retrying in 5s...")
+
+            retry_attempts -= 1
+            if retry_attempts <= 0:
+                logger.critical("Max retries reached. Exiting.")
+                break
+
             await asyncio.sleep(5)
 
     try:
         async with aiohttp.ClientSession() as session:
             while True:
                 try:
-                    data = await fetch_json(session, DATA_SOURCE_URL, DATA_SOURCE_API_KEY)
+                    data = await fetch_json(
+                        session, DATA_SOURCE_URL, DATA_SOURCE_API_KEY
+                    )
                     if data:
                         logger.info(f"Fetched data: {len(str(data))} bytes")
 
-                        await db.save_market_data(data)
+                        if await db.is_connected():
+                            await db.save_market_data(data)
+                        else:
+                            logger.error("Database not connected. Skipping data save.")
 
                         message = json.dumps(data)
                         await redis.publish_with_retry(REDIS_STREAM, message)

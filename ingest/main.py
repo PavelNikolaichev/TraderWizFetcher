@@ -7,7 +7,7 @@ import asyncio
 import signal
 from logging import getLogger
 
-from json_logging import init_logging
+from utils import init_logging
 from worker import run_worker
 
 logger = getLogger(__name__)

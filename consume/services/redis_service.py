@@ -4,7 +4,7 @@ import logging
 import redis.asyncio as aioredis
 from typing import Optional
 from config import REDIS_URL, REDIS_STREAM, FANOUT_BATCH_SIZE, XREAD_BLOCK_MS
-from client_manager import ClientManager
+from managers.client_manager import ClientManager
 
 logger = logging.getLogger(__name__)
 

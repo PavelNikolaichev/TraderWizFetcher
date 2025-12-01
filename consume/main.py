@@ -6,8 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from config import validate_config, HEARTBEAT_INTERVAL
-from client_manager import ClientManager
-from redis_service import RedisService
+from managers.client_manager import ClientManager
+from services.redis_service import RedisService
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

@@ -1,11 +1,14 @@
+from typing import Any
 from aiohttp import ClientTimeout, ClientSession
 from logging import getLogger
-from health import health
+from utils.health import health
 
 logger = getLogger(__name__)
 
 
-async def fetch_json(session: ClientSession, url: str, api_key: str = "") -> dict:
+async def fetch_json(
+    session: ClientSession, url: str, api_key: str = ""
+) -> dict[str, Any]:
     """
     Fetch JSON data from a URL with error handling and health status update.
     :param session: The aiohttp ClientSession to use for the request.
