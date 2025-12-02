@@ -44,15 +44,22 @@ class Database:
     async def init_db(self):
         """Initialize the database schema."""
         create_table_query = """
-        CREATE TABLE IF NOT EXISTS market_data (
-            id SERIAL PRIMARY KEY,
-            timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-            data JSONB NOT NULL
-        );
-        """
+    CREATE TABLE IF NOT EXISTS market_data (
+        id SERIAL PRIMARY KEY,
+        timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        data JSONB NOT NULL
+    );
+    """
+        # TODO: we have timestamp in table itself, we should use that instead of extracting from JSONB
+        # Playing dirty in here:
+        create_index_query = """
+    CREATE UNIQUE INDEX IF NOT EXISTS unique_market_data_timestamp
+    ON market_data ((data->>'timestamp'));
+    """
         async with self.pool.acquire() as connection:
             await connection.execute(create_table_query)
-            logger.info("Database schema initialized")
+            await connection.execute(create_index_query)
+            logger.info("Database schema and unique index initialized")
 
     async def save_market_data(self, data: dict[str, Any]):
         """Save raw market data to the database."""

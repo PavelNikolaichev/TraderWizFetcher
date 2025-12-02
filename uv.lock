@@ -181,6 +181,7 @@ version = "0.1.0"
 source = { virtual = "consume" }
 dependencies = [
     { name = "aiohttp" },
+    { name = "asyncpg" },
     { name = "fastapi" },
     { name = "gunicorn" },
     { name = "pydantic" },
@@ -191,6 +192,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "aiohttp", specifier = ">=3.13.2" },
+    { name = "asyncpg", specifier = ">=0.29.0" },
     { name = "fastapi", specifier = ">=0.121.3" },
     { name = "gunicorn", specifier = ">=23.0.0" },
     { name = "pydantic", specifier = ">=2.12.4" },
@@ -596,6 +598,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "aiohttp" },
+    { name = "asyncpg" },
     { name = "fastapi" },
     { name = "gunicorn" },
     { name = "pydantic" },
@@ -606,6 +609,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "aiohttp", specifier = ">=3.13.2" },
+    { name = "asyncpg", specifier = ">=0.29.0" },
     { name = "fastapi", specifier = ">=0.121.3" },
     { name = "gunicorn", specifier = ">=23.0.0" },
     { name = "pydantic", specifier = ">=2.12.4" },

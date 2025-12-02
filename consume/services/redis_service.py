@@ -2,7 +2,8 @@ import asyncio
 import json
 import logging
 import redis.asyncio as aioredis
-from typing import Optional
+from typing import Optional, List
+from collections import deque
 from config import REDIS_URL, REDIS_STREAM, FANOUT_BATCH_SIZE, XREAD_BLOCK_MS
 from managers.client_manager import ClientManager
 
@@ -15,6 +16,14 @@ class RedisService:
         self.client_manager = client_manager
         self.reader_task: Optional[asyncio.Task[None]] = None
         self.running = False
+        self.history: deque[str] = deque(maxlen=200)
+
+    def initialize_history(self, data: List[str]):
+        self.history.clear()
+        self.history.extend(data)
+
+    def get_history(self) -> List[str]:
+        return list(self.history)
 
     async def connect(self):
         self.redis = aioredis.from_url(REDIS_URL, decode_responses=True)
@@ -101,6 +110,7 @@ class RedisService:
                             )
 
                         messages_to_broadcast.append((message_id, payload_text))
+                        self.history.append(payload_text)
                         last_id = message_id
 
                 if messages_to_broadcast:

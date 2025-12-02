@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 from config import validate_config, HEARTBEAT_INTERVAL
 from managers.client_manager import ClientManager
 from services.redis_service import RedisService
+from services.db_service import DatabaseService
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -16,22 +17,30 @@ validate_config()
 
 client_manager = ClientManager()
 redis_service = RedisService(client_manager)
+db_service = DatabaseService()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
     try:
+        await db_service.connect()
+
+        # Initialize history from DB
+        history = await db_service.get_recent_market_data(limit=200)
+        redis_service.initialize_history(history)
+
         await redis_service.connect()
         await redis_service.start_reader()
     except Exception:
-        logger.error("Failed to start Redis service")
+        logger.error("Failed to start services")
         # raise
 
     yield
 
     # Shutdown
     await redis_service.stop()
+    await db_service.close()
 
 
 app = FastAPI(lifespan=lifespan)
@@ -77,6 +86,18 @@ async def sse_price_feed(request: Request, start_id: str | None = None):
 
     async def _gen():
         try:
+            # Send historical data first
+            try:
+                historical_data = redis_service.get_history()
+                for data_str in historical_data:
+                    if await request.is_disconnected():
+                        break
+                    safe_text = data_str.replace("\r", "\\r").replace("\n", "\\n")
+                    yield f"data: {safe_text}\n\n"
+            except Exception:
+                logger.exception("Failed to fetch/send historical data")
+
+            # Then stream live events
             async for item in _client_event_generator(request, q):
                 yield item
         finally:

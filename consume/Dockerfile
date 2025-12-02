@@ -24,5 +24,8 @@ ENV PATH="/app/.venv/bin:$PATH"
 # Set PYTHONPATH to include the parent of the ingest package
 ENV PYTHONPATH=/app
 
+# Expose the application port
+EXPOSE 8000
+
 # Run the application
 CMD ["uv", "run", "gunicorn", "main:app", "--bind", "0.0.0.0:8000", "--worker-class", "uvicorn.workers.UvicornWorker"]
